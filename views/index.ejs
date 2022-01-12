@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--bootstrap-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">   
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+    <title>Chat</title>
+    <script src="../utils/io/socket.io.js"></script>
+</head>
+<body>
+    <div class="row">
+    <div class="card" style="width: 80%;">
+
+        <div class="card-body">
+        <h1></h1>
+        <div class="col-xs-8 col-xs-offset-2">
+            <h2 class="text-center">Ingrese producto</h2>
+    
+            <form method="post">
+            <div class="form-group">
+                <label for="title">Titulo: </label>
+                <input type="text" name="title" id="title" class="form-control" placeholder="Entry a new Title" required>
+            </div>
+            <div class="form-group">
+                <label for="body">Precio: </label>
+                <input type="text" name="body" rows="3"  id="body" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="url">Url: </label>
+                <input type="text" name="url" rows="3"  id="url" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <input type="submit"  value="Agregar Producto" class="btn btn-primary">
+            </div>
+            </form>
+        </div>
+        <div class="col-8 col-xs-offset-2">
+            <h4 class="text-center">Lista de Productos</h4>
+           
+        </div>
+    </div>
+
+
+
+    <% if(entries.length) {%>
+        <% entries.forEach(function(entry){%>
+           <div >
+              <div>
+                 <%= entry.title%>
+                 <div>
+                   Ingreso: <%= entry.published%>
+                 </div>
+              </div>
+              <div>
+                Precio: <%= entry.content%>
+              </div>
+              <div>
+                Foto: <%= entry.url%>
+              </div>
+            
+           </div>
+        <%})%>
+     <%} else {%>
+        <p>No hay productos cargados</p>
+     <%}%>
+
+
+</div>
+</div>
+    <div class="row">
+        <div id="chat">
+            <div>
+                <h2>Sala de chat</h2>
+                <form id="info_user">
+                    <div>
+                        <input type="text" placeholder="Ingresa tu nombre">
+                        <input type="text" placeholder="Ingresa tu correo">
+                        <input type="file">
+                        <input class="btn btn-primary" type="submit" value="Ingresar al chat">
+                    </div>
+                </form>
+            </div>
+            <div>
+                <div>
+                    <div >
+                        <input type="text" id="textInput" placeholder="Ingrese aquí su texto">
+                        <button id="sendSocket">Enviar</button>
+                        <p id="contenedor_texto" class="headerp"></p>
+                    </div>
+                    <div >
+                        <div>
+                            <h4>Todos los usuarios <i id="fecha"></h4>
+                        </div>
+                        <div>
+                            <ul id="user">
+                                <li>
+                                    <span></span>
+                                    <h6>Historial de Chat</h6>
+                                
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            let student = null;
+            let socket = null;
+            let fechaActual = document.getElementById("fecha");
+            let input = document.getElementById("textInput");
+            let parrafo = document.getElementById("contenedor_texto");
+            let button = document.getElementById("sendSocket");
+            let form_data_user = document.getElementById("info_user");
+            let container_chat = document.getElementById("chat");
+            let user_list = document.getElementById("user");
+            form_data_user.addEventListener("submit", e=>{
+                e.preventDefault();
+                let file =e.target[2].files[0];
+                student = {
+                    name: e.target[0].value,
+                    email: e.target[1].value
+                }
+                if(student.name == "" || student.email == ""){
+                    window.location.reload();
+                }
+                socket = io();
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                student.photo = e.target.result;
+                    socket.emit("addUser", student);
+                }
+                reader.readAsDataURL(file);
+                container_chat.classList = "active";
+                readSockets();
+            });
+        
+            function readSockets(){
+                loadChat();
+                socket.on("listenserver", data =>{
+                    console.log("Recibiendo..", data);
+                    let inner = ``;
+                    data.forEach(element => {
+                        inner += `<b>${element.name}:</b> ${element.mensaje} </br>`;
+                    });
+                    parrafo.innerHTML = inner;
+                });
+                
+            }
+            function loadChat(){
+                socket.on("init", data =>{
+                    let inner = ``;
+                    console.log("Recibiendo..", data);
+                    data.forEach(element => {
+                        inner += `<b>${element.email}:</b> ${element.mensaje} </br>`;
+                    });
+                    parrafo.innerHTML = inner;
+                });
+                socket.on("loadUsers", data =>{
+                    console.log("Nuevo usuario", data);
+                    let inner = ``;
+                    data.forEach(element => {
+                        let status = element.active ? "(conectado)" : "(desconectado)";
+                        inner += `<li>
+                                    <div>
+                                        <img src=${element.photo}>
+                                    </div>
+                                    <b>${element.email}:</b> ${status}
+                                </li>`;
+                    });
+                    user_list.innerHTML = inner;
+                    fechaActual.innerHTML = new Date().toLocaleDateString();
+                    hola();
+                });
+            }
+     
+            button.addEventListener("click", e =>{
+                let sendMessagge = {
+                    ...student,
+                    mensaje: input.value
+                }
+                socket.emit("mensaje", sendMessagge);
+                input.value = "";
+            })
+            input.addEventListener("keyup", e =>{
+                socket.emit("loadUsers", input.value);
+            })
+            function hola(){
+                console.log("hola");
+            }
+        </script>
+    </div>
+   
+</body>
+</html>
