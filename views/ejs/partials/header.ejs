@@ -1,0 +1,38 @@
+<header class="container-fluid">
+    <div class="row text-center py-1">
+      <h6 class="lead text-succes">-Envios gratis a partir de $3.500-</h6>
+    </div>
+
+    <div class="row navbar navbar-expand bg-light">
+      <div class="container-fluid ">
+          <div class="container w-auto ">
+            <Link to="/"><h2 class="ms-3 pt-2" id= "store">Nucleo | Store</h2></Link>
+          </div>
+            <div class="collapse navbar-collapse offset-md-4" id="navbarSupportedContent">
+              <form action="/buscar" class="form container row" method="post" role="form" autocomplete="off">
+                <div class="col-6">
+                  <input id="id" name="id" type="number" class="form-control"/>
+                </div>
+                <div class="col-6">
+                  <button type="submit" class="btn btn-dark">Buscar por ID</button>
+                </div>
+              </form>
+            </div>
+      </div>
+    </div>
+
+    <div class="row bg-light">
+      <ul class="nav justify-content-center">
+        <li class="nav-item">
+          <a href="/"><input value="Inicio" type="submit" class="btn btn-lg btn-light" ></a>
+        </li>
+          <a href="/carrito"><input value="Carrito" type="submit" class="btn btn-lg btn-light" ></a>
+        </li>
+        <li class="nav-item">
+          <a href="/agregar"><input value="Agregar" type="submit" class="btn btn-lg btn-light" ></a>
+        </li>
+      </ul>
+    </div>
+
+      
+  </header>
